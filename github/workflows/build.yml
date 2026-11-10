@@ -1,0 +1,24 @@
+name: Build APK
+on: [push, workflow_dispatch]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 17 }
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: 8.7 }
+      - shell: bash
+        run: |
+          unzip -q ReadyNowAndroid.zip
+          cd ReadyNowAndroid
+          gradle assembleDebug --stacktrace 2>&1 | tee ../build.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ReadyNow
+          path: |
+            ReadyNowAndroid/app/build/outputs/apk/debug/*.apk
+            build.log
